@@ -60,3 +60,15 @@
 @import 'views/pages/aboutContributeInfo';
 @import 'views/pages/doodle';
 @import 'views/pages/options';
+
+.load-error {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    padding: 3rem;
+    color: white;
+    background: #111;
+    font: 16px/1.6 monospace;
+    a, button { color: inherit; margin-right: 1rem; }
+    button { background: transparent; border: 1px solid; padding: .5rem; cursor: pointer; }
+}

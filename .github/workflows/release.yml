@@ -1,0 +1,93 @@
+name: Build and release extension
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - name: Build, package and test the unpacked extension
+        run: npm test
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: extension
+          path: |
+            release/codedoodles-extension.zip
+            release/SHA256SUMS
+          if-no-files-found: error
+      - name: Save browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: browser-diagnostics
+          path: test-results/
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: extension
+          path: release
+      - name: Publish a GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          RUN_NUMBER: ${{ github.run_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release
+          sha256sum --check SHA256SUMS
+          tag="build-${RUN_NUMBER}-${COMMIT_SHA:0:12}"
+          cat > notes.md <<EOF
+          Built from commit ${COMMIT_SHA}.
+
+          Download codedoodles-extension.zip and extract it into a permanent folder.
+          Open chrome://extensions, enable Developer mode, choose Load unpacked,
+          and select the folder containing manifest.json. Open a new tab and accept
+          Chrome's new-tab change prompt if shown.
+
+          To update, replace the files in that same folder, click Reload on the
+          extension's card, and open a fresh tab. Updates are manual.
+
+          This extension uses https://doodles.treyturner.info and
+          https://doodle.treyturner.info. It is not published to the Chrome Web Store.
+          EOF
+          # Publish only after both assets upload. A failed upload leaves a retryable draft.
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --draft \
+              --target "$COMMIT_SHA" --title "Extension build ${RUN_NUMBER}" \
+              --notes-file notes.md --latest=false
+          fi
+          if [[ "$(gh release view "$tag" --json isDraft --jq .isDraft)" == true ]]; then
+            gh release upload "$tag" codedoodles-extension.zip SHA256SUMS --clobber
+            gh release edit "$tag" --draft=false --latest=false
+          fi
+          # A slower old build must not displace a release of the current master.
+          if [[ "$(gh api "repos/${GH_REPO}/commits/master" --jq .sha)" == "$COMMIT_SHA" ]]; then
+            gh release edit "$tag" --latest
+          fi

@@ -21,7 +21,7 @@
 			padding-bottom: 1px;
 			border-bottom: 2px solid rgba(255, 255, 255, 0.26);
 
-			.no-touch & {
+			@media (any-hover: hover) and (any-pointer: fine) {
 
 				&:hover {
 					border-width: 0;
@@ -136,7 +136,7 @@
 		a {
 			border-bottom: 2px solid $cd-blue;
 
-			.no-touch & {
+			@media (any-hover: hover) and (any-pointer: fine) {
 
 				&:hover {
 					animation: link-blink-blue 0.1s 1;
@@ -155,7 +155,7 @@
 		a {
 			border-bottom: 2px solid $cd-red;
 
-			.no-touch & {
+			@media (any-hover: hover) and (any-pointer: fine) {
 
 				&:hover {
 					animation: link-blink-red 0.1s 1;

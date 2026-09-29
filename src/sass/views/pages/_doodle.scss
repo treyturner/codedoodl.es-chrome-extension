@@ -138,7 +138,7 @@
             display: none;
             cursor: pointer;
 
-            .no-touch & {
+            @media (any-hover: hover) and (any-pointer: fine) {
 
                 &:hover {
                     width: 40px;
@@ -207,7 +207,7 @@
             }
         }
 
-        .no-touch & {
+        @media (any-hover: hover) and (any-pointer: fine) {
 
             &:hover {
 
@@ -361,7 +361,7 @@
         @include respond-to(small) {
             padding: 220px 65px 20px 70px;
             overflow: auto;
-            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
 
             .interaction-indicators {
                 display: none;
@@ -372,7 +372,7 @@
             color: $cd-blue;
             border-color: $cd-red;
 
-            .no-touch & {
+            @media (any-hover: hover) and (any-pointer: fine) {
 
                 &:hover {
                     border-width: 0;
@@ -419,6 +419,7 @@
                 &:before,
                 &:after {
                     height: 25px;
+                    pointer-events: none;
                 }
 
                 &:after {
@@ -440,17 +441,9 @@
                 }
 
                 .doodle-info-inner {
-                    // overflow: auto;
-                    // -webkit-over-scrolling: touch;
-                    // padding: $site-padding-desktop 0 0;
-
-                    overflow: hidden;
+                    overflow: auto;
+                    overscroll-behavior: contain;
                     padding: 0;
-
-                    .touch & {
-                        overflow: auto;
-                        -webkit-over-scrolling: touch;
-                    }
 
                     .doodle-info-scroller {
                         padding: $site-padding-desktop 0;

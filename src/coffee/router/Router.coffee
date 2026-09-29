@@ -17,6 +17,9 @@ class Router extends Backbone.Router
         Backbone.history.start 
             pushState : true
             root      : '/'
+            silent    : true
+
+        @hashChanged()
 
         null
 

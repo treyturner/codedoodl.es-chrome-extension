@@ -7,11 +7,10 @@ class ShowAppsBtn extends AbstractView
 
     constructor: ->
 
-        @templateVars = {}
-
         super()
+        @init()
 
-        return null
+        return
 
     init : =>
 
@@ -35,12 +34,14 @@ class ShowAppsBtn extends AbstractView
         null
 
     onWordEnter : (e) =>
+        return unless window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches
 
         CodeWordTransitioner.scramble @$el, @activeColour
 
         null
 
     onWordLeave : (e) =>
+        return unless window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches
 
         CodeWordTransitioner.unscramble @$el, @activeColour
 

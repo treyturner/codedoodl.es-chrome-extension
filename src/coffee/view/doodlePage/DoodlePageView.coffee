@@ -10,20 +10,21 @@ class DoodlePageView extends AbstractViewPage
 	colourScheme : null
 	refreshTimer : null
 
-	infoScroller : null
 
 	MIN_PADDING_TOP    : 230
 	MIN_PADDING_BOTTOM : 85
 
-	constructor : ->
+	preinitialize : ->
 
 		@templateVars =
 			refresh_btn_title : @CD_CE().locale.get "doodle_refresh_btn_title"
 			random_btn_title  : @CD_CE().locale.get "doodle_random_btn_title"
 
+	constructor : ->
 		super()
+		@init()
 
-		return null
+		return
 
 	init : =>
 
@@ -66,7 +67,7 @@ class DoodlePageView extends AbstractViewPage
 
 		@setupUI()
 
-		super
+		super cb
 
 		if @CD_CE().appData.OPTIONS.autoplay
 			@showFrame false
@@ -79,7 +80,7 @@ class DoodlePageView extends AbstractViewPage
 
 		@CD_CE().appView.header.hideDoodleInfo()
 
-		super
+		super cb
 
 		null
 
@@ -99,66 +100,26 @@ class DoodlePageView extends AbstractViewPage
 	setupInfoDims : =>
 
 		@$doodleInfoContent = @$el.find('[data-doodle-info-content]')
-		@$doodleInfoContent.removeClass('enable-overflow').css({ top: ''})
-			.find('.doodle-info-inner').css({ maxHeight: '' })
+		$inner = @$doodleInfoContent.find('.doodle-info-inner')
+		@$doodleInfoContent.removeClass('enable-overflow').css top: ''
+		$inner.css(maxHeight: '').attr 'tabindex', -1
+		dims = @CD_CE().appView.dims
+		narrow = dims.w <= 750 # Matches the Sass small breakpoint.
+		@$infoContent.attr 'tabindex', if narrow then 0 else -1
+		return if narrow
 
-		contentOffset = @$doodleInfoContent.offset().top
-
-		requiresOverflow = (contentOffset <= @MIN_PADDING_TOP) and (@CD_CE().appView.dims.w >= 750) # this 750 is from the grid breakpoints which aren't available to MediaQueries clas
-
-		console.log "setupInfoDims : =>", contentOffset, requiresOverflow
-
-		if requiresOverflow
-
-			top       = @MIN_PADDING_TOP
-			maxHeight = @CD_CE().appView.dims.h - @MIN_PADDING_TOP - @MIN_PADDING_BOTTOM
-
-			@_setupInfoWithOverflow top, maxHeight
-
-		else
-
-			@_setupInfoWithoutOverflow()
-
-		null
-
-	_setupInfoWithOverflow : (top, maxHeight) =>
-
-		@$doodleInfoContent.addClass('enable-overflow').css({ top: top })
-			.find('.doodle-info-inner').css({ maxHeight: maxHeight })
-
-		$infoContentInner = @$doodleInfoContent.find('.doodle-info-inner')
-
-		if !Modernizr.touch
-
-			iScrollOpts = 
-				mouseWheel            : true
-				scrollbars            : true
-				interactiveScrollbars : true
-				fadeScrollbars        : true
-				momentum              : false
-				bounce                : false
-				preventDefault        : false
-
-			if @infoScroller
-				@infoScroller.refresh()
-			else
-				@infoScroller = new IScroll $infoContentInner[0], iScrollOpts
-
-		null
-
-	_setupInfoWithoutOverflow : =>
-
-		@$doodleInfoContent.removeClass('enable-overflow').css({ top: '' })
-			.find('.doodle-info-inner').css({ maxHeight: '' })
-
-		@infoScroller?.destroy()
-		@infoScroller = null
+		# Keep the original placement, but reserve visible content in short windows.
+		top = Math.min @MIN_PADDING_TOP, Math.max(60, dims.h - @MIN_PADDING_BOTTOM - 100)
+		bounds = @$doodleInfoContent[0].getBoundingClientRect()
+		if bounds.top < top or bounds.bottom > dims.h - @MIN_PADDING_BOTTOM
+			@$doodleInfoContent.addClass('enable-overflow').css top: top
+			$inner.css(maxHeight: Math.max(1, dims.h - top - @MIN_PADDING_BOTTOM)).attr 'tabindex', 0
 
 		null
 
 	showFrame : (removeEvent=true, delay=null) =>
 
-		if removeEvent then @CD_CE().appView.transitioner.off @CD_CE().appView.transitioner.EVENT_TRANSITIONER_OUT_DONE, @showFrame
+		if removeEvent then @CD_CE().appView.transitioner?.off @CD_CE().appView.transitioner.EVENT_TRANSITIONER_OUT_DONE, @showFrame
 
 		@$frame.attr 'src', "#{@CD_CE().DOODLES_URL}/#{@model.get('slug')}/index.html"
 		@$frame.one 'load', => @showDoodle delay
@@ -175,7 +136,8 @@ class DoodlePageView extends AbstractViewPage
 
 		# allow frame to transition in and then focus it
 		setTimeout =>
-			@$frame.focus()
+			# Opening information during loading must not lose keyboard focus later.
+			@$frame[0].focus() if @$frame.hasClass('show') and !@$el.hasClass('show-info')
 		, 500
 
 		null
@@ -233,12 +195,12 @@ class DoodlePageView extends AbstractViewPage
 			content_interaction         : @_getInteractionContent()
 			label_share                 : @CD_CE().locale.get "doodle_label_share"
 			share_url                   : @CD_CE().SITE_URL + '/' + @model.get('id')
-			share_url_text              : @CD_CE().SITE_URL.replace('http://', '') + '/' + @model.get('id')
-			mouse_enabled               : @model.get('interaction.mouse')
-			keyboard_enabled            : @model.get('interaction.keyboard')
-			touch_enabled               : @model.get('interaction.touch')
+			share_url_text              : @CD_CE().SITE_URL.replace(/^https?:\/\//, '') + '/' + @model.get('id')
+			mouse_enabled               : @model.get('interaction').mouse
+			keyboard_enabled            : @model.get('interaction').keyboard
+			touch_enabled               : @model.get('interaction').touch
 
-		doodleInfoContent = _.template(@CD_CE().templates.get('doodle-info'))(doodleInfoVars)
+		doodleInfoContent = @CD_CE().templates.get('doodle-info')(doodleInfoVars)
 
 		doodleInfoContent
 
@@ -246,9 +208,9 @@ class DoodlePageView extends AbstractViewPage
 
 		interactions = []
 
-		if @model.get('interaction.mouse') then interactions.push @CD_CE().locale.get "doodle_label_interaction_mouse"
-		if @model.get('interaction.keyboard') then interactions.push @CD_CE().locale.get "doodle_label_interaction_keyboard"
-		if @model.get('interaction.touch') then interactions.push @CD_CE().locale.get "doodle_label_interaction_touch"
+		if @model.get('interaction').mouse then interactions.push @CD_CE().locale.get "doodle_label_interaction_mouse"
+		if @model.get('interaction').keyboard then interactions.push @CD_CE().locale.get "doodle_label_interaction_keyboard"
+		if @model.get('interaction').touch then interactions.push @CD_CE().locale.get "doodle_label_interaction_touch"
 
 		interactions.join(', ') or @CD_CE().locale.get "doodle_label_interaction_none"
 
@@ -264,10 +226,9 @@ class DoodlePageView extends AbstractViewPage
 
 		@$el.removeClass('show-info')
 
-		setTimeout =>
-			@infoScroller?.destroy()
-			@infoScroller = null
-		, 500
+		@$infoContent.scrollTop 0
+		@$doodleInfoContent.find('.doodle-info-inner').scrollTop 0
+		@$frame[0].focus() if @$frame.hasClass('show')
 
 		null
 
@@ -287,7 +248,7 @@ class DoodlePageView extends AbstractViewPage
 
 		vars =
 			doodle_name   : @model.get 'name'
-			doodle_author : if @model.get('author.twitter') then "@#{@model.get('author.twitter')}" else @model.get('author.name')
+			doodle_author : if @model.get('author').twitter then "@#{@model.get('author').twitter}" else @model.get('author').name
 			share_url     : @CD_CE().SITE_URL + '/' + @model.get('id')
 			doodle_tags   : _.map(@model.get('tags'), (tag) -> '#' + tag).join(' ')
 
@@ -321,7 +282,7 @@ class DoodlePageView extends AbstractViewPage
 
 	showShowDoodleBtn : =>
 
-		@$showDoodleBtn.text 'show `' + @model.get('author.name') + ' \\ ' + @model.get('name') + '`'
+		@$showDoodleBtn.text 'show `' + @model.get('author').name + ' \\ ' + @model.get('name') + '`'
 
 		@$showDoodleBtnPane.addClass('show')
 		@showDoodleBtnColour = if @model.get('colour_scheme') is 'light' then 'black' else 'white'
@@ -335,12 +296,14 @@ class DoodlePageView extends AbstractViewPage
 		null
 
 	onShowDoodleBtnEnter : (e) =>
+		return unless window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches
 
 		CodeWordTransitioner.scramble @$showDoodleBtn, @showDoodleBtnColour
 
 		null
 
 	onShowDoodleBtnLeave : (e) =>
+		return unless window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches
 
 		CodeWordTransitioner.unscramble @$showDoodleBtn, @showDoodleBtnColour
 

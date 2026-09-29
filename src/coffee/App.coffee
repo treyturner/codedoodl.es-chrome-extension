@@ -1,8 +1,5 @@
 Analytics    = require './utils/Analytics'
-AuthManager  = require './utils/AuthManager'
 Share        = require './utils/Share'
-Facebook     = require './utils/Facebook'
-GooglePlus   = require './utils/GooglePlus'
 Templates    = require './data/Templates'
 Locale       = require './data/Locale'
 Router       = require './router/Router'
@@ -22,7 +19,7 @@ class App
     localeCode  : window.config.localeCode
     objReady    : 0
 
-    _toClean   : ['objReady', 'setFlags', 'objectComplete', 'init', 'initObjects', 'initSDKs', 'initApp', 'go', 'cleanup', '_toClean']
+    _toClean   : ['objReady', 'setFlags', 'objectComplete', 'init', 'initObjects', 'initApp', 'go', 'cleanup', '_toClean']
 
     constructor : (@LIVE) ->
 
@@ -64,13 +61,6 @@ class App
 
         null
 
-    initSDKs : =>
-
-        Facebook.load()
-        GooglePlus.load()
-
-        null
-
     initApp : =>
 
         @setFlags()
@@ -79,12 +69,9 @@ class App
         @appView = new AppView
         @router  = new Router
         @nav     = new Nav
-        @auth    = new AuthManager
         @share   = new Share
 
         @go()
-
-        @initSDKs()
 
         null
 
