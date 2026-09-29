@@ -4,123 +4,117 @@ Nav             = require '../../router/Nav'
 
 class Wrapper extends AbstractView
 
-	VIEW_TYPE_PAGE  : 'page'
-	VIEW_TYPE_MODAL : 'modal'
+    VIEW_TYPE_PAGE  : 'page'
+    VIEW_TYPE_MODAL : 'modal'
 
-	template : 'wrapper'
+    template : 'wrapper'
 
-	views          : null
-	previousView   : null
-	currentView    : null
-	backgroundView : null
+    views          : null
+    previousView   : null
+    currentView    : null
+    backgroundView : null
 
-	constructor : ->
+    constructor : ->
 
-		@views =
-			doodle : classRef : DoodlePageView, route : @CD_CE().nav.sections.HOME, view : null, type : @VIEW_TYPE_PAGE
+        super()
 
-		@createClasses()
+        @views =
+            doodle : classRef : DoodlePageView, route : @CD_CE().nav.sections.HOME, view : null, type : @VIEW_TYPE_PAGE
 
-		super()
+        @createClasses()
+        @init()
 
-		# decide if you want to add all core DOM up front, or add only when required, see comments in AbstractViewPage.coffee
-		# @addClasses()
+        # decide if you want to add all core DOM up front, or add only when required, see comments in AbstractViewPage.coffee
+        # @addClasses()
 
-		return null
+        return
 
-	createClasses : =>
+    createClasses : =>
 
-		(@views[name].view = new @views[name].classRef) for name, data of @views
+        (@views[name].view = new @views[name].classRef) for name, data of @views
 
-		null
+        null
 
-	addClasses : =>
+    addClasses : =>
 
-		 for name, data of @views
-		 	if data.type is @VIEW_TYPE_PAGE then @addChild data.view
+         for name, data of @views
+            if data.type is @VIEW_TYPE_PAGE then @addChild data.view
 
-		null
+        null
 
-	getViewByRoute : (route) =>
+    getViewByRoute : (route) =>
 
-		for name, data of @views
-			return @views[name] if route is @views[name].route
+        for name, data of @views
+            return @views[name] if route is @views[name].route
 
-		null
+        if route then return @views.fourOhFour
 
-	getViewByRoute : (route) =>
+        null
 
-		for name, data of @views
-			return @views[name] if route is @views[name].route
+    init : =>
 
-		if route then return @views.fourOhFour
+        @CD_CE().appView.on 'start', @start
 
-		null
+        null
 
-	init : =>
+    start : =>
 
-		@CD_CE().appView.on 'start', @start
+        @CD_CE().appView.off 'start', @start
 
-		null
+        @bindEvents()
+        @updateDims()
 
-	start : =>
+        null
 
-		@CD_CE().appView.off 'start', @start
+    bindEvents : =>
 
-		@bindEvents()
-		@updateDims()
+        @CD_CE().nav.on Nav.EVENT_CHANGE_VIEW, @changeView
+        @CD_CE().nav.on Nav.EVENT_CHANGE_SUB_VIEW, @changeSubView
 
-		null
+        @CD_CE().appView.on @CD_CE().appView.EVENT_UPDATE_DIMENSIONS, @updateDims
 
-	bindEvents : =>
+        null
 
-		@CD_CE().nav.on Nav.EVENT_CHANGE_VIEW, @changeView
-		@CD_CE().nav.on Nav.EVENT_CHANGE_SUB_VIEW, @changeSubView
+    updateDims : =>
 
-		@CD_CE().appView.on @CD_CE().appView.EVENT_UPDATE_DIMENSIONS, @updateDims
+        @$el.css 'min-height', @CD_CE().appView.dims.h
 
-		null
+        null
 
-	updateDims : =>
+    changeView : (previous, current) =>
 
-		@$el.css 'min-height', @CD_CE().appView.dims.h
+        if @pageSwitchDfd and @pageSwitchDfd.state() isnt 'resolved'
+            do (previous, current) => @pageSwitchDfd.done => @changeView previous, current
+            return
 
-		null
+        @previousView = @getViewByRoute previous.area
+        @currentView  = @getViewByRoute current.area
 
-	changeView : (previous, current) =>
+        if !@previousView
+            @transitionViews false, @currentView
+        else
+            @transitionViews @previousView, @currentView
 
-		if @pageSwitchDfd and @pageSwitchDfd.state() isnt 'resolved'
-			do (previous, current) => @pageSwitchDfd.done => @changeView previous, current
-			return
+        null
 
-		@previousView = @getViewByRoute previous.area
-		@currentView  = @getViewByRoute current.area
+    changeSubView : (current) =>
 
-		if !@previousView
-			@transitionViews false, @currentView
-		else
-			@transitionViews @previousView, @currentView
+        @currentView.view.trigger Nav.EVENT_CHANGE_SUB_VIEW, current.sub
 
-		null
+        null
 
-	changeSubView : (current) =>
+    transitionViews : (from, to) =>
 
-		@currentView.view.trigger Nav.EVENT_CHANGE_SUB_VIEW, current.sub
+        @pageSwitchDfd = $.Deferred()
 
-		null
+        if from and to
+            @CD_CE().appView.transitioner.prepare from.route, to.route
+            @CD_CE().appView.transitioner.in => from.view.hide => to.view.show => @CD_CE().appView.transitioner.out => @pageSwitchDfd.resolve()
+        else if from
+            from.view.hide @pageSwitchDfd.resolve
+        else if to
+            to.view.show @pageSwitchDfd.resolve
 
-	transitionViews : (from, to) =>
-
-		@pageSwitchDfd = $.Deferred()
-
-		if from and to
-			@CD_CE().appView.transitioner.prepare from.route, to.route
-			@CD_CE().appView.transitioner.in => from.view.hide => to.view.show => @CD_CE().appView.transitioner.out => @pageSwitchDfd.resolve()
-		else if from
-			from.view.hide @pageSwitchDfd.resolve
-		else if to
-			to.view.show @pageSwitchDfd.resolve
-
-		null
+        null
 
 module.exports = Wrapper

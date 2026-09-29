@@ -1,4 +1,4 @@
-encode = require 'ent/encode'
+encode = (char) -> '&#' + char.charCodeAt(0) + ';'
 
 class CodeWordTransitioner
 

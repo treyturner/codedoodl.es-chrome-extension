@@ -11,13 +11,13 @@ class AbstractView extends Backbone.View
 		@children = []
 
 		if @template
-			tmpHTML = _.template @CD_CE().templates.get @template
+			tmpHTML = @CD_CE().templates.get @template
 			@setElement tmpHTML @templateVars
 
 		@$el.attr 'id', @id if @id
 		@$el.addClass @className if @className
 		
-		@init()
+		# Concrete views call init after super, once CoffeeScript has bound callbacks.
 
 		@paused = false
 
@@ -87,10 +87,7 @@ class AbstractView extends Backbone.View
 
 	CSSTranslate : (x, y, value='%', scale) =>
 
-		if Modernizr.csstransforms3d
-			str = "translate3d(#{x+value}, #{y+value}, 0)"
-		else
-			str = "translate(#{x+value}, #{y+value})"
+		str = "translate3d(#{x+value}, #{y+value}, 0)"
 
 		if scale then str = "#{str} scale(#{scale})"
 
@@ -178,7 +175,7 @@ class AbstractView extends Backbone.View
 
 		null
 
-	CD_CE : =>
+	CD_CE : ->
 
 		return window.CD_CE
 

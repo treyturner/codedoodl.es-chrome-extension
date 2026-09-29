@@ -14,9 +14,11 @@ class Nav extends AbstractView
 
     constructor: ->
 
+        super()
+
         @CD_CE().router.on Router.EVENT_HASH_CHANGED, @changeView
 
-        return false
+        return
 
     getSection : (section) =>
 
@@ -39,7 +41,6 @@ class Nav extends AbstractView
         @trigger Nav.EVENT_CHANGE_VIEW, @previous, @current
         @trigger Nav.EVENT_CHANGE_SUB_VIEW, @current
 
-        if @CD_CE().appView.modalManager.isOpen() then @CD_CE().appView.modalManager.hideOpenModal()
 
         # @trackPageView()
 

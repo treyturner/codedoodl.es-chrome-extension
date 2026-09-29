@@ -4,7 +4,6 @@ Header       = require './view/base/Header'
 Wrapper      = require './view/base/Wrapper'
 Footer       = require './view/base/Footer'
 ShowAppsBtn  = require './view/base/ShowAppsBtn'
-ModalManager = require './view/modals/_ModalManager'
 MediaQueries = require './utils/MediaQueries'
 
 class AppView extends AbstractView
@@ -34,12 +33,12 @@ class AppView extends AbstractView
 
     constructor : ->
 
+        super()
+
         @$window = $(window)
         @$body   = $('body').eq(0)
 
-        super()
-
-        return null
+        return
 
     disableTouch: =>
 
@@ -64,7 +63,6 @@ class AppView extends AbstractView
         @bindEvents()
 
         @preloader    = new Preloader
-        @modalManager = new ModalManager
 
         @header  = new Header
         @wrapper = new Wrapper

@@ -4,13 +4,12 @@ class Footer extends AbstractView
 
     template : 'site-footer'
 
-    constructor: ->
+    preinitialize: ->
 
         @templateVars = 
-        	desc : @CD_CE().locale.get "footer_desc"
+            desc : @CD_CE().locale.get "footer_desc"
 
-        super()
 
-        return null
+        return
 
 module.exports = Footer

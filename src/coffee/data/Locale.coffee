@@ -1,5 +1,4 @@
 LocalesModel = require '../models/core/LocalesModel'
-API          = require '../data/API'
 
 ###
 # Locale Loader #

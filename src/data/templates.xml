@@ -25,7 +25,7 @@
         <![CDATA[
             <header id="site-header">
                 <h1 class="logo" data-logo>
-                    <a class="logo__link white" href="http://codedoodl.es" target="_blank" data-codeword="" data-codeword-initial-state="white"><span data-codetext-char="c" data-codetext-char-state="white">c</span><span data-codetext-char="o" data-codetext-char-state="white">o</span><span data-codetext-char="d" data-codetext-char-state="white">d</span><span data-codetext-char="e" data-codetext-char-state="white">e</span><span data-codetext-char="d" data-codetext-char-state="white">d</span><span data-codetext-char="o" data-codetext-char-state="white">o</span><span data-codetext-char="o" data-codetext-char-state="white">o</span><span data-codetext-char="d" data-codetext-char-state="white">d</span><span data-codetext-char="l" data-codetext-char-state="white">l</span><span data-codetext-char="." data-codetext-char-state="white">.</span><span data-codetext-char="e" data-codetext-char-state="white">e</span><span data-codetext-char="s" data-codetext-char-state="white">s</span></a>
+                    <a class="logo__link white" href="https://doodles.treyturner.info" target="_blank" data-codeword="" data-codeword-initial-state="white"><span data-codetext-char="c" data-codetext-char-state="white">c</span><span data-codetext-char="o" data-codetext-char-state="white">o</span><span data-codetext-char="d" data-codetext-char-state="white">d</span><span data-codetext-char="e" data-codetext-char-state="white">e</span><span data-codetext-char="d" data-codetext-char-state="white">d</span><span data-codetext-char="o" data-codetext-char-state="white">o</span><span data-codetext-char="o" data-codetext-char-state="white">o</span><span data-codetext-char="d" data-codetext-char-state="white">d</span><span data-codetext-char="l" data-codetext-char-state="white">l</span><span data-codetext-char="." data-codetext-char-state="white">.</span><span data-codetext-char="e" data-codetext-char-state="white">e</span><span data-codetext-char="s" data-codetext-char-state="white">s</span></a>
                 </h1>
                 <nav class="site-nav">
                     <a class="site-nav__link info-btn white" href="#" data-show-info="" data-word-section="doodle-info" data-codeword="" data-codeword-initial-state="white"><span data-codetext-char="i" data-codetext-char-state="white">i</span><span data-codetext-char="n" data-codetext-char-state="white">n</span><span data-codetext-char="f" data-codetext-char-state="white">f</span><span data-codetext-char="o" data-codetext-char-state="white">o</span></a>
@@ -60,7 +60,7 @@
                     <iframe frameborder="0" scrolling="no" data-doodle-frame class="doodle-frame"></iframe>
                     <span class="preloader-dots" data-dots><i class="dot dot-1"></i><i class="dot dot-2"></i><i class="dot dot-3"></i></span>
                     <span class="doodle-instructions" data-codeword data-doodle-instructions>What up</span>
-                    <div class="subpage-info" data-doodle-info></div>
+                    <div class="subpage-info" data-doodle-info tabindex="-1" role="region" aria-label="Sketch information"></div>
                     <span class="subpage-info-pane"></span>
                     <div class="show-doodle-btn-pane" data-show-doodle-btn-pane>
                         <a href="#" class="show-doodle-btn" data-show-doodle-btn data-codeword>show doodle</a>
@@ -100,7 +100,7 @@
                     </span>
                     <span class="doodle-preview-line"></span>
                 </span>
-                <div class="doodle-info-inner">
+                <div class="doodle-info-inner" tabindex="-1" role="region" aria-label="Sketch details">
                     <div class="doodle-info-scroller">
                         <div class="row row-author cf">
                             <div class="col col-1">01. <%= label_author %></div>

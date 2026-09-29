@@ -8,11 +8,9 @@ class Preloader extends AbstractView
 
 	constructor : ->
 
-		@setElement $('#preloader')
+		super el: '#preloader'
 
-		super()
-
-		return null
+		return
 
 	init : =>
 

@@ -32,16 +32,6 @@ class DoodlesCollection extends AbstractCollection
         else
             return @at index
 
-    getNextDoodle : (doodle) =>
-
-        index = @indexOf doodle
-        index++
-
-        if index > (@length.length-1)
-            return false
-        else
-            return @at index
-
     addNew : (doodles) =>
 
         for doodle in doodles
@@ -60,7 +50,6 @@ class DoodlesCollection extends AbstractCollection
                 break
 
         if !nextDoodle
-            console.log 'waaaaa u seen them all?!'
             nextDoodle = _.shuffle(@models)[0]
 
         nextDoodle

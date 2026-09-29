@@ -13,18 +13,20 @@ class Header extends AbstractView
 	EVENT_DOODLE_INFO_CLOSE  : 'EVENT_DOODLE_INFO_CLOSE'
 	EVENT_HOME_SCROLL_TO_TOP : 'EVENT_HOME_SCROLL_TO_TOP'
 
-	constructor : ->
+	preinitialize : ->
 
 		@templateVars =
 			home_label  : @CD_CE().locale.get('header_logo_label')
 			close_label : @CD_CE().locale.get('header_close_label')
 			info_label  : @CD_CE().locale.get('header_info_label')
 
+	constructor : ->
 		super()
+		@init()
 
 		@bindEvents()
 
-		return null
+		return
 
 	init : =>
 
@@ -119,6 +121,7 @@ class Header extends AbstractView
 		null
 
 	onWordEnter : (e) =>
+		return unless window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches
 
 		$el = $(e.currentTarget)
 		wordSection = $el.attr('data-word-section')
@@ -128,6 +131,7 @@ class Header extends AbstractView
 		null
 
 	onWordLeave : (e) =>
+		return unless window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches
 
 		$el = $(e.currentTarget)
 		wordSection = $el.attr('data-word-section')
